@@ -545,24 +545,30 @@
         rootKey.keyPair.network = libs.bitcoin.networks['bitcoin']
         var master = libs.bip85.BIP85.fromBase58(rootKey.toBase58());
 
-        var result;
+        var result = '';
 
-        const index = parseInt(DOM.bip85index.val(), 10);
+        const indexMax = parseInt(DOM.bip85index.val(), 10);
+          for (let index = 0; index <= indexMax; index++) {
+              if (app === 'bip39') {
+                const language = parseInt(DOM.bip85mnemonicLanguage.val(), 10);
+                const length = parseInt(DOM.bip85mnemonicLength.val(), 10);
+      
+                result += `${index};${master.deriveBIP39(language, length, index).toMnemonic()}
+`;
+              } else if (app === 'wif') {
+                  result += `${index};${master.deriveWIF(index).toWIF()}
+`;
+              } else if (app === 'xprv') {
+                  result += `${index};${master.deriveXPRV(index).toXPRV()}
+`;
+              } else if (app === 'hex') {
+                const bytes = parseInt(DOM.bip85bytes.val(), 10);
+      
+                  result += `${index};${master.deriveHex(bytes, index).toEntropy()}
+`;
+              }
+          }
 
-        if (app === 'bip39') {
-          const language = parseInt(DOM.bip85mnemonicLanguage.val(), 10);
-          const length = parseInt(DOM.bip85mnemonicLength.val(), 10);
-
-          result = master.deriveBIP39(language, length, index).toMnemonic();
-        } else if (app === 'wif') {
-          result = master.deriveWIF(index).toWIF();
-        } else if (app === 'xprv') {
-          result = master.deriveXPRV(index).toXPRV();
-        } else if (app === 'hex') {
-          const bytes = parseInt(DOM.bip85bytes.val(), 10);
-
-          result = master.deriveHex(bytes, index).toEntropy();
-        }
 
         hideValidationError();
         DOM.bip85Field.val(result);
